@@ -57,7 +57,7 @@
 <body>
     <div class="container">
         <h1>Velora AI Admin Dashboard</h1>
-
+        
         <div class="card">
             <h2>Clients</h2>
             <table>
@@ -75,11 +75,52 @@
                 </tbody>
             </table>
         </div>
+        
+        <div class="card">
+            <h2>Add New Client</h2>
+            <form id="addClientForm">
+                <div style="margin-bottom: 15px;">
+                    <label for="phoneNumber">Phone Number:</label><br>
+                    <input type="text" id="phoneNumber" name="phoneNumber" placeholder="+1XXXXXXXXXX" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="name">Name:</label><br>
+                    <input type="text" id="name" name="name" placeholder="Client Name" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="style">Conversation Style:</label><br>
+                    <select id="style" name="style" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        <option value="friendly">Friendly & Warm</option>
+                        <option value="professional">Professional & Discreet</option>
+                        <option value="flirty">Flirty & Playful</option>
+                        <option value="luxury">Luxury & Exclusive</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="doNotList">Do Not List (comma separated):</label><br>
+                    <textarea id="doNotList" name="doNotList" placeholder="e.g., explicit requests, price negotiation" style="width: 100%; padding: 8px; box-sizing: border-box; height: 80px;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="services">Services Offered (comma separated):</label><br>
+                    <textarea id="services" name="services" placeholder="e.g., companionship, dinner dates" style="width: 100%; padding: 8px; box-sizing: border-box; height: 80px;"></textarea>
+                </div>
+                
+                <button type="submit" class="button">Add Client</button>
+            </form>
+        </div>
     </div>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             loadClients();
+            document.getElementById('addClientForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addClient();
+            });
         });
 
         function loadClients() {
@@ -88,10 +129,10 @@
                 .then(data => {
                     const clientsTable = document.getElementById('clientsTable');
                     clientsTable.innerHTML = '';
-                    
+
                     if (Object.keys(data).length === 0) {
                         const row = document.createElement('tr');
-                        row.innerHTML = '<td colspan="5">No clients yet.</td>';
+                        row.innerHTML = '<td colspan="5">No clients yet. Add your first client below.</td>';
                         clientsTable.appendChild(row);
                         return;
                     }
@@ -106,7 +147,9 @@
                             <td>${client.name}</td>
                             <td>${client.style}</td>
                             <td>${formattedDate}</td>
-                            <td><a href="/client/${encodeURIComponent(phoneNumber)}" class="button">View</a></td>
+                            <td>
+                                <a href="/client/${encodeURIComponent(phoneNumber)}" class="button">View</a>
+                            </td>
                         `;
                         clientsTable.appendChild(row);
                     }
@@ -114,6 +157,52 @@
                 .catch(error => {
                     console.error('Error loading clients:', error);
                 });
+        }
+
+        function addClient() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const name = document.getElementById('name').value;
+            const style = document.getElementById('style').value;
+            const doNotList = document.getElementById('doNotList').value.split(',').map(item => item.trim());
+            const services = document.getElementById('services').value.split(',').map(item => item.trim());
+
+            if (!phoneNumber || !phoneNumber.match(/^\+[0-9]{10,15}$/)) {
+                alert('Please enter a valid phone number in the format +1XXXXXXXXXX');
+                return;
+            }
+
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            const client = {
+                name,
+                style,
+                do_not_list: doNotList,
+                services
+            };
+
+            fetch(`/clients/${encodeURIComponent(phoneNumber)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(client)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to add client');
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('addClientForm').reset();
+                loadClients();
+                alert('Client added successfully!');
+            })
+            .catch(error => {
+                console.error('Error adding client:', error);
+                alert('Failed to add client. Please try again.');
+            });
         }
     </script>
 </body>

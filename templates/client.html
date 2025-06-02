@@ -2,10 +2,247 @@
 <html>
 <head>
     <title>Velora AI - Client Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #8e44ad;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #9b59b6;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .client-info {
+            margin-bottom: 20px;
+        }
+        .client-info p {
+            margin: 5px 0;
+        }
+        .client-info strong {
+            display: inline-block;
+            width: 150px;
+        }
+        .conversation {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .client-message {
+            background-color: #f1f0f0;
+            margin-right: 20%;
+        }
+        .ai-message {
+            background-color: #9b59b6;
+            color: white;
+            margin-left: 20%;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .send-message {
+            display: flex;
+            margin-top: 20px;
+        }
+        .send-message input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Client Details Page</h1>
-    <p>This is where individual client conversations will go.</p>
+    <div class="container">
+        <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+        
+        <h1 id="clientName">Client Details</h1>
+        
+        <div class="card">
+            <h2>Client Information</h2>
+            <div class="client-info" id="clientInfo">
+                <!-- Client info will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Conversation History</h2>
+            <div class="conversation" id="conversation">
+                <!-- Conversation will be loaded here -->
+            </div>
+            
+            <div class="send-message">
+                <input type="text" id="messageInput" placeholder="Type a message...">
+                <button class="button" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get client phone number from URL
+        const pathParts = window.location.pathname.split('/');
+        const phoneNumber = decodeURIComponent(pathParts[pathParts.length - 1]);
+        
+        // Load client data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClientData();
+            
+            // Set up send message
+            document.getElementById('sendButton').addEventListener('click', sendMessage);
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+        
+        // Function to load client data
+        function loadClientData() {
+            fetch(`/clients/${encodeURIComponent(phoneNumber)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Client not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update client name in title
+                    document.getElementById('clientName').textContent = data.client.name;
+                    
+                    // Update client info
+                    const clientInfo = document.getElementById('clientInfo');
+                    
+                    // Format date
+                    const createdDate = new Date(data.client.created_at);
+                    const formattedDate = createdDate.toLocaleDateString();
+                    
+                    clientInfo.innerHTML = `
+                        <p><strong>Phone Number:</strong> ${phoneNumber}</p>
+                        <p><strong>Name:</strong> ${data.client.name}</p>
+                        <p><strong>Style:</strong> ${data.client.style}</p>
+                        <p><strong>Created:</strong> ${formattedDate}</p>
+                        <p><strong>Do Not List:</strong> ${data.client.do_not_list.join(', ') || 'None'}</p>
+                        <p><strong>Services:</strong> ${data.client.services.join(', ') || 'None'}</p>
+                    `;
+                    
+                    // Update conversation
+                    updateConversation(data.conversation);
+                })
+                .catch(error => {
+                    console.error('Error loading client data:', error);
+                    alert('Failed to load client data. Please try again.');
+                });
+        }
+        
+        // Function to update conversation display
+        function updateConversation(conversation) {
+            const conversationDiv = document.getElementById('conversation');
+            conversationDiv.innerHTML = '';
+            
+            if (conversation.length === 0) {
+                conversationDiv.innerHTML = '<p>No messages yet.</p>';
+                return;
+            }
+            
+            for (const message of conversation) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = message.is_client ? 'message client-message' : 'message ai-message';
+                
+                // Format date
+                const messageDate = new Date(message.timestamp);
+                const formattedTime = messageDate.toLocaleTimeString() + ' ' + messageDate.toLocaleDateString();
+                
+                messageDiv.innerHTML = `
+                    <div>${message.content}</div>
+                    <div class="message-time">${formattedTime}</div>
+                `;
+                
+                conversationDiv.appendChild(messageDiv);
+            }
+            
+            // Scroll to bottom
+            conversationDiv.scrollTop = conversationDiv.scrollHeight;
+        }
+        
+        // Function to send a message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                return;
+            }
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Send message
+            fetch(`/send-message/${encodeURIComponent(phoneNumber)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Reload client data to update conversation
+                loadClientData();
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            });
+        }
+    </script>
 </body>
 </html>
 
