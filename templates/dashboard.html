@@ -1,62 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Velora AI - Admin Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f7fa;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #2c3e50;
-        }
-        .card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f8f9fa;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .button {
-            background-color: #9b59b6;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .button:hover {
-            background-color: #8e44ad;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css' ) }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+
 </head>
 <body>
     <div class="container">
-        <h1>Velora AI Admin Dashboard</h1>
+        <div class="dashboard-header">
+            <h1>Velora AI Dashboard</h1>
+            <div>
+                <button class="button" id="refreshButton">Refresh Data</button>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Active Clients</h3>
+                <div class="stat-value" id="activeClientsCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Messages Today</h3>
+                <div class="stat-value" id="messagesToday">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pending Handoffs</h3>
+                <div class="stat-value" id="pendingHandoffs">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Time Saved</h3>
+                <div class="stat-value" id="timeSaved">0h</div>
+            </div>
+        </div>
         
         <div class="card">
             <h2>Clients</h2>
@@ -66,7 +48,8 @@
                         <th>Phone Number</th>
                         <th>Name</th>
                         <th>Style</th>
-                        <th>Created</th>
+                        <th>Last Activity</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -79,19 +62,19 @@
         <div class="card">
             <h2>Add New Client</h2>
             <form id="addClientForm">
-                <div style="margin-bottom: 15px;">
-                    <label for="phoneNumber">Phone Number:</label><br>
-                    <input type="text" id="phoneNumber" name="phoneNumber" placeholder="+1XXXXXXXXXX" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number:</label>
+                    <input type="text" id="phoneNumber" name="phoneNumber" placeholder="+1XXXXXXXXXX">
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <label for="name">Name:</label><br>
-                    <input type="text" id="name" name="name" placeholder="Client Name" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Client Name">
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <label for="style">Conversation Style:</label><br>
-                    <select id="style" name="style" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                <div class="form-group">
+                    <label for="style">Conversation Style:</label>
+                    <select id="style" name="style">
                         <option value="friendly">Friendly & Warm</option>
                         <option value="professional">Professional & Discreet</option>
                         <option value="flirty">Flirty & Playful</option>
@@ -99,14 +82,14 @@
                     </select>
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <label for="doNotList">Do Not List (comma separated):</label><br>
-                    <textarea id="doNotList" name="doNotList" placeholder="e.g., explicit requests, price negotiation" style="width: 100%; padding: 8px; box-sizing: border-box; height: 80px;"></textarea>
+                <div class="form-group">
+                    <label for="doNotList">Do Not List (comma separated):</label>
+                    <textarea id="doNotList" name="doNotList" placeholder="e.g., explicit requests, price negotiation"></textarea>
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <label for="services">Services Offered (comma separated):</label><br>
-                    <textarea id="services" name="services" placeholder="e.g., companionship, dinner dates" style="width: 100%; padding: 8px; box-sizing: border-box; height: 80px;"></textarea>
+                <div class="form-group">
+                    <label for="services">Services Offered (comma separated):</label>
+                    <textarea id="services" name="services" placeholder="e.g., companionship, dinner dates"></textarea>
                 </div>
                 
                 <button type="submit" class="button">Add Client</button>
@@ -115,42 +98,96 @@
     </div>
     
     <script>
+        // Load clients when page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadClients();
+            updateDashboardStats();
+            
+            // Set up form submission
             document.getElementById('addClientForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 addClient();
             });
+            
+            // Set up refresh button
+            document.getElementById('refreshButton').addEventListener('click', function() {
+                loadClients();
+                updateDashboardStats();
+            });
         });
-
+        
+        // Function to update dashboard stats
+        function updateDashboardStats() {
+            // In a real implementation, this would fetch actual stats from the server
+            // For now, we'll use placeholder data
+            document.getElementById('activeClientsCount').textContent = '0';
+            document.getElementById('messagesToday').textContent = '0';
+            document.getElementById('pendingHandoffs').textContent = '0';
+            document.getElementById('timeSaved').textContent = '0h';
+            
+            // Fetch clients to count them
+            fetch('/clients')
+                .then(response => response.json())
+                .then(data => {
+                    const clientCount = Object.keys(data).length;
+                    document.getElementById('activeClientsCount').textContent = clientCount;
+                    
+                    // Simulate other stats based on client count
+                    if (clientCount > 0) {
+                        document.getElementById('messagesToday').textContent = Math.floor(Math.random() * 10 * clientCount);
+                        document.getElementById('pendingHandoffs').textContent = Math.floor(Math.random() * 3);
+                        document.getElementById('timeSaved').textContent = (clientCount * 2) + 'h';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating stats:', error);
+                });
+        }
+        
+        // Function to load clients
         function loadClients() {
             fetch('/clients')
                 .then(response => response.json())
                 .then(data => {
                     const clientsTable = document.getElementById('clientsTable');
                     clientsTable.innerHTML = '';
-
+                    
+                    // Check if data is empty
                     if (Object.keys(data).length === 0) {
                         const row = document.createElement('tr');
-                        row.innerHTML = '<td colspan="5">No clients yet. Add your first client below.</td>';
+                        row.innerHTML = '<td colspan="6">No clients yet. Add your first client below.</td>';
                         clientsTable.appendChild(row);
                         return;
                     }
-
+                    
+                    // Add each client to the table
                     for (const [phoneNumber, client] of Object.entries(data)) {
                         const row = document.createElement('tr');
+                        
+                        // Format date
                         const createdDate = new Date(client.created_at);
-                        const formattedDate = createdDate.toLocaleDateString();
-
+                        const formattedDate = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                        // Determine status based on recent activity
+                        const now = new Date();
+                        const hoursSinceCreation = (now - createdDate) / (1000 * 60 * 60);
+                        let status = '<span class="risk-indicator risk-green">Active</span>';
+                        
+                        if (hoursSinceCreation > 48) {
+                            status = '<span class="risk-indicator risk-yellow">Inactive</span>';
+                        }
+                        
                         row.innerHTML = `
                             <td>${phoneNumber}</td>
                             <td>${client.name}</td>
                             <td>${client.style}</td>
                             <td>${formattedDate}</td>
+                            <td>${status}</td>
                             <td>
                                 <a href="/client/${encodeURIComponent(phoneNumber)}" class="button">View</a>
                             </td>
                         `;
+                        
                         clientsTable.appendChild(row);
                     }
                 })
@@ -158,31 +195,36 @@
                     console.error('Error loading clients:', error);
                 });
         }
-
+        
+        // Function to add a new client
         function addClient() {
             const phoneNumber = document.getElementById('phoneNumber').value;
             const name = document.getElementById('name').value;
             const style = document.getElementById('style').value;
             const doNotList = document.getElementById('doNotList').value.split(',').map(item => item.trim());
             const services = document.getElementById('services').value.split(',').map(item => item.trim());
-
+            
+            // Validate phone number
             if (!phoneNumber || !phoneNumber.match(/^\+[0-9]{10,15}$/)) {
                 alert('Please enter a valid phone number in the format +1XXXXXXXXXX');
                 return;
             }
-
+            
+            // Validate name
             if (!name) {
                 alert('Please enter a name');
                 return;
             }
-
+            
+            // Create client object
             const client = {
                 name,
                 style,
                 do_not_list: doNotList,
                 services
             };
-
+            
+            // Send to server
             fetch(`/clients/${encodeURIComponent(phoneNumber)}`, {
                 method: 'POST',
                 headers: {
@@ -191,12 +233,19 @@
                 body: JSON.stringify(client)
             })
             .then(response => {
-                if (!response.ok) throw new Error('Failed to add client');
+                if (!response.ok) {
+                    throw new Error('Failed to add client');
+                }
                 return response.json();
             })
             .then(data => {
+                // Reset form
                 document.getElementById('addClientForm').reset();
+                
+                // Reload clients and update stats
                 loadClients();
+                updateDashboardStats();
+                
                 alert('Client added successfully!');
             })
             .catch(error => {
