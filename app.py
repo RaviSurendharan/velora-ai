@@ -1,13 +1,11 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 import os
 from ai.chat import process_message
 from messaging.sms import send_sms
 from twilio.twiml.messaging_response import MessagingResponse
+import database.models as db
 
 app = Flask(__name__)
-
-# Simple in-memory storage for conversation history
-conversations = {}
 
 @app.route("/")
 def home():
@@ -26,21 +24,21 @@ def sms_webhook():
 
     print(f"Received message from {from_number}: {body}")
 
-    if from_number not in conversations:
-        conversations[from_number] = []
+    client = db.get_client_by_phone(from_number)
 
-    conversations[from_number].append({
-        "is_client": True,
-        "content": body
-    })
+    if not client:
+        client = db.save_client(
+            phone_number=from_number,
+            name="New Client",
+            style="friendly"
+        )
 
-    client_profile = {"name": "Your Name", "style": "friendly"}
-    ai_response = process_message(body, conversations[from_number], client_profile)
+    db.save_message(from_number, body, is_client=True)
+    conversation = db.get_conversation(from_number)
 
-    conversations[from_number].append({
-        "is_client": False,
-        "content": ai_response
-    })
+    ai_response = process_message(body, conversation, client)
+
+    db.save_message(from_number, ai_response, is_client=False)
 
     resp = MessagingResponse()
     resp.message(ai_response)
@@ -57,6 +55,24 @@ def test_sms():
 
     result = send_sms(to_number, message)
     return jsonify(result)
+
+@app.route("/clients", methods=["GET"])
+def list_clients():
+    clients = db.get_clients()
+    return jsonify(clients)
+
+@app.route("/clients/<phone_number>", methods=["GET"])
+def get_client(phone_number):
+    client = db.get_client_by_phone(phone_number)
+    if not client:
+        return jsonify({"error": "Client not found"}), 404
+
+    conversation = db.get_conversation(phone_number)
+
+    return jsonify({
+        "client": client,
+        "conversation": conversation
+    })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
