@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Velora AI - Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .button {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Velora AI Admin Dashboard</h1>
+
+        <div class="card">
+            <h2>Clients</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phone Number</th>
+                        <th>Name</th>
+                        <th>Style</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="clientsTable">
+                    <!-- Client data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClients();
+        });
+
+        function loadClients() {
+            fetch('/clients')
+                .then(response => response.json())
+                .then(data => {
+                    const clientsTable = document.getElementById('clientsTable');
+                    clientsTable.innerHTML = '';
+                    
+                    if (Object.keys(data).length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = '<td colspan="5">No clients yet.</td>';
+                        clientsTable.appendChild(row);
+                        return;
+                    }
+
+                    for (const [phoneNumber, client] of Object.entries(data)) {
+                        const row = document.createElement('tr');
+                        const createdDate = new Date(client.created_at);
+                        const formattedDate = createdDate.toLocaleDateString();
+
+                        row.innerHTML = `
+                            <td>${phoneNumber}</td>
+                            <td>${client.name}</td>
+                            <td>${client.style}</td>
+                            <td>${formattedDate}</td>
+                            <td><a href="/client/${encodeURIComponent(phoneNumber)}" class="button">View</a></td>
+                        `;
+                        clientsTable.appendChild(row);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading clients:', error);
+                });
+        }
+    </script>
+</body>
+</html>
+
