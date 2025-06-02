@@ -4,3 +4,5 @@ openai==0.27.0
 twilio==7.0.0
 gunicorn
 gunicorn==20.1.0
+werkzeug==2.0.3
+
