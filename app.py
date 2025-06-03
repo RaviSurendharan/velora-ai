@@ -11,10 +11,10 @@ from auth import auth_bp
 app = Flask(__name__)
 app.register_blueprint(auth_bp)
 
-
 @app.route("/")
 def home():
-    return "Velora AI is running! <a href='/dashboard'>Go to Dashboard</a>"
+    return render_template("home.html")
+
 
 @app.route("/dashboard")
 def dashboard():
