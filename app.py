@@ -4,8 +4,12 @@ from ai.chat import process_message
 from messaging.sms import send_sms
 from twilio.twiml.messaging_response import MessagingResponse
 import database.models as db
+from auth import auth_bp
+
 
 app = Flask(__name__)
+app.register_blueprint(auth_bp)
+
 
 @app.route("/")
 def home():
