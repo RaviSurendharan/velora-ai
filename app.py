@@ -24,11 +24,6 @@ def dashboard():
 def client_page(phone_number):
     return render_template("client.html")
 
-@app.route("/escort-profile")
-def escort_profile():
-    return render_template("escort_profile.html")
-
-
 @app.route("/test-ai", methods=["GET"])
 def test_ai():
     # Simple endpoint to test the AI
