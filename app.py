@@ -141,14 +141,17 @@ def escort_login():
         phone = request.form.get("phone")
         password = request.form.get("password")
 
-        escort = db.get_escort(phone)
+        escorts = db.get_escorts()
+        escort = escorts.get(phone)
 
         if escort and escort["password"] == password:
+            # ✅ Login successful: load escort profile page
             return render_template("escort_profile.html", escort=escort)
         else:
             return "Invalid credentials. Please try again."
 
     return render_template("escort_login.html")
+
 
 if __name__ == "__main__":
     import os
