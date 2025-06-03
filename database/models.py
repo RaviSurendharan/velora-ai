@@ -88,3 +88,23 @@ def save_escort_profile(phone_number, name, style, bio, do_not_list, services):
 
     return clients[phone_number]
 
+ESCORTS_FILE = os.path.join(DATA_DIR, "escorts.json")
+
+if not os.path.exists(ESCORTS_FILE):
+    with open(ESCORTS_FILE, "w") as f:
+        json.dump({}, f)
+
+def get_escorts():
+    with open(ESCORTS_FILE, "r") as f:
+        return json.load(f)
+
+def save_escort(phone, name, password):
+    escorts = get_escorts()
+    escorts[phone] = {
+        "name": name,
+        "password": password,
+        "created_at": datetime.now().isoformat()
+    }
+    with open(ESCORTS_FILE, "w") as f:
+        json.dump(escorts, f)
+

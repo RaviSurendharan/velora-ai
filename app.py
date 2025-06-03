@@ -165,6 +165,22 @@ def escort_profile():
     else:
         return render_template("escort_profile.html")
 
+@app.route("/escort-signup", methods=["GET", "POST"])
+def escort_signup():
+    if request.method == "POST":
+        name = request.form.get("name")
+        phone = request.form.get("phone")
+        password = request.form.get("password")
+
+        # Save to file (you can later upgrade this to database)
+        escorts = db.get_escorts()
+        if phone in escorts:
+            return "Escort already exists. Please login."
+
+        db.save_escort(phone, name, password)
+        return "Signup successful! You can now login."
+
+    return render_template("escort_signup.html")
 
 
 if __name__ == "__main__":
