@@ -1,4 +1,4 @@
-import json
+kimport json
 import os
 from datetime import datetime
 
@@ -70,20 +70,21 @@ def save_message(phone_number, content, is_client=True):
         json.dump(conversations, f)
 
     return conversations[phone_number]
-def save_escort_profile(name, style, bio, do_not_list, services):
-    escort_profile = {
+
+def save_escort_profile(phone_number, name, style, bio, do_not_list, services):
+    clients = get_clients()
+
+    clients[phone_number] = {
         "name": name,
         "style": style,
         "bio": bio,
         "do_not_list": do_not_list,
         "services": services,
-        "created_at": datetime.datetime.utcnow()
+        "updated_at": datetime.now().isoformat()
     }
 
-    escorts_collection.update_one(
-        {"name": name},
-        {"$set": escort_profile},
-        upsert=True
-    )
-    return escort_profile
+    with open(CLIENTS_FILE, "w") as f:
+        json.dump(clients, f)
+
+    return clients[phone_number]
 
