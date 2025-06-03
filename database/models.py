@@ -26,20 +26,20 @@ def get_client_by_phone(phone_number):
     clients = get_clients()
     return clients.get(phone_number)
 
-def save_client(phone_number, name, style="friendly", do_not_list=None, services=None):
-    if do_not_list is None:
-        do_not_list = []
-    if services is None:
-        services = []
-
+def save_escort_profile(phone_number, name, style, bio, do_not_list, services):
     clients = get_clients()
-    clients[phone_number] = {
+
+    if phone_number not in clients:
+        clients[phone_number] = {}
+
+    clients[phone_number].update({
         "name": name,
         "style": style,
+        "bio": bio,
         "do_not_list": do_not_list,
         "services": services,
-        "created_at": datetime.now().isoformat()
-    }
+        "updated_at": datetime.now().isoformat()
+    })
 
     with open(CLIENTS_FILE, "w") as f:
         json.dump(clients, f)
