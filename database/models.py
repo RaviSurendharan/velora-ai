@@ -70,3 +70,20 @@ def save_message(phone_number, content, is_client=True):
         json.dump(conversations, f)
 
     return conversations[phone_number]
+def save_escort_profile(name, style, bio, do_not_list, services):
+    escort_profile = {
+        "name": name,
+        "style": style,
+        "bio": bio,
+        "do_not_list": do_not_list,
+        "services": services,
+        "created_at": datetime.datetime.utcnow()
+    }
+
+    escorts_collection.update_one(
+        {"name": name},
+        {"$set": escort_profile},
+        upsert=True
+    )
+    return escort_profile
+

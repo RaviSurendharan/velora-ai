@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
-import os
+import database.models as db
+
 from ai.chat import process_message
 from messaging.sms import send_sms
 from twilio.twiml.messaging_response import MessagingResponse
@@ -144,6 +145,32 @@ def test_sms():
     
     result = send_sms(to_number, message)
     return jsonify(result)
+
+@app.route("/escort-profile", methods=["GET", "POST"])
+def escort_profile():
+    if request.method == "POST":
+        data = request.json
+        phone_number = request.headers.get("X-Phone-Number")  # Later: replace with real escort session
+
+        if not phone_number:
+            return jsonify({"error": "Missing phone number"}), 400
+
+        # Save escort profile
+        db.save_escort_profile(
+            phone_number=phone_number,
+            name=data.get("name"),
+            style=data.get("style"),
+            bio=data.get("bio"),
+            do_not_list=data.get("do_not_list", []),
+            services=data.get("services", [])
+        )
+
+        return jsonify({"success": True})
+
+    else:
+        return render_template("escort_profile.html")
+
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
