@@ -1,41 +1,32 @@
 import openai
-import os
 
-# Get API key from environment variable
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+def process_message(message, conversation=None, client=None):
+    system_prompt = "You are a seductive, flirty, and clever text assistant for an independent escort. " \
+                    "Your job is to respond to potential clients via SMS. You should be playful and engaging, " \
+                    "but also filter out time-wasters, vague inquiries, or explicit demands. Be human-like and " \
+                    "match the client's chosen style (friendly, professional, flirty, or luxury). Keep boundaries. " \
+                    "Your goal is to warm up the lead and pass it on to the escort only if they seem serious."
 
-def process_message(message, conversation_history=None, client_profile=None):
-    """Process incoming message with AI"""
-    if conversation_history is None:
-        conversation_history = []
-    
-    if client_profile is None:
-        client_profile = {"name": "Escort", "style": "friendly"}
-    
-    # Prepare the system message with personality style
-    system_message = f"You are an AI assistant for {client_profile['name']}. "
-    system_message += f"Use a {client_profile['style']} communication style. "
-    system_message += "You are responding to potential clients. Be conversational and natural."
-    
-    # Format conversation history for the API
-    messages = [{"role": "system", "content": system_message}]
-    
-    # Add conversation history (limited to last 5 messages to save tokens)
-    for msg in conversation_history[-5:]:
-        role = "user" if msg.get("is_client", False) else "assistant"
-        messages.append({"role": role, "content": msg.get("content", "")})
-    
-    # Add the current message
+    if client:
+        system_prompt += f"\nEscort Style: {client.get('style', 'friendly')}"
+        system_prompt += f"\nDo Not Engage With: {', '.join(client.get('do_not_list', []))}"
+        system_prompt += f"\nServices Offered: {', '.join(client.get('services', []))}"
+
+    messages = [{"role": "system", "content": system_prompt}]
+
+    if conversation:
+        for msg in conversation[-5:]:  # last 5 messages
+            messages.append({
+                "role": "user" if msg["is_client"] else "assistant",
+                "content": msg["content"]
+            })
+
     messages.append({"role": "user", "content": message})
-    
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            max_tokens=150,
-            temperature=0.7
-        )
-        return response.choices[0].message["content"].strip()
-    except Exception as e:
-        print(f"Error calling OpenAI API: {e}")
-        return "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages
+    )
+
+    return response.choices[0].message["content"]
+
