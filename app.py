@@ -182,6 +182,40 @@ def escort_signup():
 
     return render_template("escort_signup.html")
 
+@app.route("/escort-login", methods=["GET", "POST"])
+def escort_login():
+    if request.method == "POST":
+        phone = request.form.get("phone")
+        password = request.form.get("password")
+
+        escorts = db.get_escorts()
+        escort = escorts.get(phone)
+
+        if escort and escort["password"] == password:
+            return f"Welcome back, {escort['name']}!"
+        else:
+            return "Invalid credentials. Please try again."
+
+    return render_template("escort_login.html")
+
+
+@app.route("/escort-login", methods=["GET", "POST"])
+def escort_login():
+    if request.method == "POST":
+        phone = request.form.get("phone")
+        password = request.form.get("password")
+
+        escort = db.get_escort(phone)
+
+        if escort and escort["password"] == password:
+            # ✅ Authenticated: show escort profile dashboard
+            return render_template("escort_profile.html", escort=escort)
+        else:
+            return "Invalid credentials. Please try again."
+
+    return render_template("escort_login.html")
+
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
