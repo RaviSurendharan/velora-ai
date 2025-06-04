@@ -16,17 +16,31 @@ app.register_blueprint(auth_bp)
 def home():
     return render_template("home.html")
 
+
 @app.route("/admin-dashboard")
 def admin_dashboard():
     escorts = db.get_escorts()
+    clients = db.get_clients()
+    conversations = db.get_conversations()
 
-    # Inject mock analytics for now
-    for phone, e in escorts.items():
-        e["message_count"] = 120  # TODO: calculate dynamically
-        e["client_count"] = 18    # TODO: calculate dynamically
-        e["revenue"] = 7200       # TODO: calculate dynamically
+    for phone, escort in escorts.items():
+        # Count total messages sent by this escort's clients
+        message_count = 0
+        client_count = 0
+
+        for client_phone, conv in conversations.items():
+            if client_phone.startswith(phone[-4:]):  # crude match
+                client_count += 1
+                message_count += len(conv)
+
+        escort["message_count"] = message_count
+        escort["client_count"] = client_count
+        escort["revenue"] = client_count * 400  # mock average revenue
 
     return render_template("admin_dashboard.html", escorts=escorts)
+
+
+
 
 @app.route("/client/<phone_number>")
 def client_page(phone_number):
