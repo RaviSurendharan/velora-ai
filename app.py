@@ -109,10 +109,14 @@ def test_sms():
 # 👩 Escort Profile Form
 @app.route("/escort-profile", methods=["GET", "POST"])
 def escort_profile():
-    phone_number = request.headers.get("X-Phone-Number", "12345")  # Replace later with session token
+    phone_number = request.headers.get("X-Phone-Number", "12345")  # TEMP: hardcoded for now
     escort = db.get_escort(phone_number)
 
     if request.method == "POST":
+        if not escort:
+            # If escort not found, create empty profile
+            escort = {}
+
         escort["name"] = request.form.get("name")
         escort["style"] = request.form.get("style")
         escort["bio"] = request.form.get("bio")
@@ -131,7 +135,8 @@ def escort_profile():
 
         return render_template("escort_profile.html", escort=escort)
 
-    return render_template("escort_profile.html", escort=escort)
+    return render_template("escort_profile.html", escort=escort or {})
+
 
 # 📝 Signup Route
 @app.route("/escort-signup", methods=["GET", "POST"])
