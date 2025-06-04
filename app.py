@@ -184,7 +184,7 @@ def escort_login():
     return render_template("escort_login.html")
 
 
-@app.route("/admin")
+@app.route("/admin-dashboard")
 def admin_dashboard():
     escorts = db.get_escorts()
     return render_template("admin_dashboard.html", escorts=escorts)
