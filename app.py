@@ -9,9 +9,11 @@ from auth import auth_bp
 app = Flask(__name__)
 app.register_blueprint(auth_bp)
 
+from flask import redirect, url_for
+
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return redirect(url_for("escort_login"))
 
 @app.route("/dashboard")
 def dashboard():
@@ -103,21 +105,31 @@ def test_sms():
 
 @app.route("/escort-profile", methods=["GET", "POST"])
 def escort_profile():
+    phone_number = request.headers.get("X-Phone-Number", "12345")  # temporary default phone
+
+    escort = db.get_escort(phone_number)
+
     if request.method == "POST":
-        data = request.json
-        phone_number = request.headers.get("X-Phone-Number")
-        if not phone_number:
-            return jsonify({"error": "Missing phone number"}), 400
-        db.save_escort_profile(
-            phone_number=phone_number,
-            name=data.get("name"),
-            style=data.get("style"),
-            bio=data.get("bio"),
-            do_not_list=data.get("do_not_list", []),
-            services=data.get("services", [])
+        escort["name"] = request.form.get("name")
+        escort["style"] = request.form.get("style")
+        escort["bio"] = request.form.get("bio")
+        escort["services"] = [s.strip() for s in request.form.get("services", "").split(",")]
+        escort["do_not_list"] = [d.strip() for d in request.form.get("do_not_list", "").split(",")]
+
+        db.save_escort(
+            phone_number,
+            escort["name"],
+            escort.get("password", ""),
+            escort["style"],
+            escort["bio"],
+            escort["do_not_list"],
+            escort["services"]
         )
-        return jsonify({"success": True})
-    return render_template("escort_profile.html")
+
+        return render_template("escort_profile.html", escort=escort)
+
+    return render_template("escort_profile.html", escort=escort)
+
 
 @app.route("/escort-signup", methods=["GET", "POST"])
 def escort_signup():

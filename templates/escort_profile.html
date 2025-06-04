@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Escort Profile - Velora AI</title>
+  <title>Escort Profile - Velora AI</title>
 </head>
 <body>
-    <h1>Welcome, {{ escort.name }}</h1>
+  <h1>Welcome, {{ escort.name }}</h1>
 
-    <h2>Style: {{ escort.style }}</h2>
+  <form method="POST" action="/escort-profile">
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name" value="{{ escort.name }}"><br><br>
 
-    <h3>Bio:</h3>
-    <p>{{ escort.bio }}</p>
+    <label for="style">Style:</label><br>
+    <input type="text" id="style" name="style" value="{{ escort.style }}"><br><br>
 
-    <h3>Services Offered:</h3>
-    <ul>
-        {% for service in escort.services %}
-            <li>{{ service }}</li>
-        {% endfor %}
-    </ul>
+    <label for="bio">Bio:</label><br>
+    <textarea id="bio" name="bio">{{ escort.bio }}</textarea><br><br>
 
-    <h3>Do Not List:</h3>
-    <ul>
-        {% for item in escort.do_not_list %}
-            <li>{{ item }}</li>
-        {% endfor %}
-    </ul>
+    <label for="services">Services Offered (comma separated):</label><br>
+    <input type="text" id="services" name="services" value="{{ escort.services|join(', ') }}"><br><br>
 
-    <p><a href="/dashboard">Go to Dashboard</a></p>
+    <label for="do_not_list">Do Not List (comma separated):</label><br>
+    <input type="text" id="do_not_list" name="do_not_list" value="{{ escort.do_not_list|join(', ') }}"><br><br>
+
+    <input type="submit" value="Update Profile">
+  </form>
+
+  <br><a href="/dashboard">Go to Dashboard</a>
 </body>
 </html>
 
