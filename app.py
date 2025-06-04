@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
+import os
 import database.models as db
-
 from ai.chat import process_message
 from messaging.sms import send_sms
 from twilio.twiml.messaging_response import MessagingResponse
@@ -9,8 +9,7 @@ from auth import auth_bp
 app = Flask(__name__)
 app.register_blueprint(auth_bp)
 
-from flask import redirect, url_for
-
+# 🔁 Redirect homepage to login
 @app.route("/")
 def home():
     return redirect(url_for("escort_login"))
@@ -29,6 +28,7 @@ def test_ai():
     response = process_message(test_message)
     return jsonify({"message": test_message, "response": response})
 
+# 📩 SMS Webhook
 @app.route("/sms", methods=["POST"])
 def sms_webhook():
     from_number = request.values.get("From", "")
@@ -44,9 +44,12 @@ def sms_webhook():
             style="friendly"
         )
 
+    escort = db.get_escort(from_number)
+
     db.save_message(from_number, body, is_client=True)
     conversation = db.get_conversation(from_number)
-    ai_response = process_message(body, conversation, client)
+
+    ai_response = process_message(body, conversation, client, escort)
     db.save_message(from_number, ai_response, is_client=False)
 
     resp = MessagingResponse()
@@ -103,10 +106,10 @@ def test_sms():
         return jsonify({"error": "Missing 'to' parameter"}), 400
     return jsonify(send_sms(to_number, message))
 
+# 👩 Escort Profile Form
 @app.route("/escort-profile", methods=["GET", "POST"])
 def escort_profile():
-    phone_number = request.headers.get("X-Phone-Number", "12345")  # temporary default phone
-
+    phone_number = request.headers.get("X-Phone-Number", "12345")  # Replace later with session token
     escort = db.get_escort(phone_number)
 
     if request.method == "POST":
@@ -130,7 +133,7 @@ def escort_profile():
 
     return render_template("escort_profile.html", escort=escort)
 
-
+# 📝 Signup Route
 @app.route("/escort-signup", methods=["GET", "POST"])
 def escort_signup():
     if request.method == "POST":
@@ -147,6 +150,7 @@ def escort_signup():
 
     return render_template("escort_signup.html")
 
+# 🔐 Login Route
 @app.route("/escort-login", methods=["GET", "POST"])
 def escort_login():
     if request.method == "POST":
@@ -157,15 +161,14 @@ def escort_login():
         escort = escorts.get(phone)
 
         if escort and escort["password"] == password:
-            # ✅ Login successful: load escort profile page
             return render_template("escort_profile.html", escort=escort)
         else:
             return "Invalid credentials. Please try again."
 
     return render_template("escort_login.html")
 
-
+# 🚀 Launch App
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
