@@ -12,7 +12,7 @@ app.register_blueprint(auth_bp)
 # 🔁 Redirect homepage to login
 @app.route("/")
 def home():
-    return redirect(url_for("escort_login"))
+    return render_template("index.html")
 
 @app.route("/dashboard")
 def dashboard():
