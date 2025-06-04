@@ -109,17 +109,13 @@ def test_sms():
 # 👩 Escort Profile Form
 @app.route("/escort-profile", methods=["GET", "POST"])
 def escort_profile():
-    phone_number = request.headers.get("X-Phone-Number", "12345")  # temporary default phone
+    phone_number = session.get("escort_phone")
+    if not phone_number:
+        return redirect(url_for("escort_login"))
 
     escort = db.get_escort(phone_number)
     if not escort:
-        escort = {
-            "name": "",
-            "style": "",
-            "bio": "",
-            "services": [],
-            "do_not_list": []
-        }
+        return redirect(url_for("escort_login"))
 
     if request.method == "POST":
         escort["name"] = request.form.get("name")
@@ -131,14 +127,18 @@ def escort_profile():
         db.save_escort(
             phone_number,
             escort["name"],
-            escort.get("password", ""),  # Fallback if missing
+            escort.get("password", ""),
             escort["style"],
             escort["bio"],
             escort["do_not_list"],
             escort["services"]
         )
 
+        return redirect(url_for("dashboard"))
+
     return render_template("escort_profile.html", escort=escort)
+
+
 
 
 # 📝 Signup Route
@@ -159,6 +159,10 @@ def escort_signup():
     return render_template("escort_signup.html")
 
 # 🔐 Login Route
+
+from flask import session  # make sure this is at the top of the file
+app.secret_key = "velora_secret_key"  # Add this near app = Flask(...)
+
 @app.route("/escort-login", methods=["GET", "POST"])
 def escort_login():
     if request.method == "POST":
@@ -169,7 +173,8 @@ def escort_login():
         escort = escorts.get(phone)
 
         if escort and escort["password"] == password:
-            return render_template("escort_profile.html", escort=escort)
+            session["escort_phone"] = phone
+            return redirect(url_for("escort_profile"))
         else:
             return "Invalid credentials. Please try again."
 
