@@ -65,25 +65,35 @@ def test_ai():
     response = process_message(test_message)
     return jsonify({"message": test_message, "response": response})
 
+
 @app.route("/sms", methods=["POST"])
 def sms_webhook():
     from_number = request.values.get("From", "")
     body = request.values.get("Body", "")
 
+    print(f"Received message from {from_number}: {body}")
+
     client = db.get_client_by_phone(from_number)
     if not client:
-        client = db.save_client(phone_number=from_number, name="New Client", style="friendly")
+        client = db.save_client(
+            phone_number=from_number,
+            name="New Client",
+            style="friendly"
+        )
 
     escort = db.get_escort(from_number)
-    db.save_message(from_number, body, is_client=True)
 
+    db.save_message(from_number, body, is_client=True)
     conversation = db.get_conversation(from_number)
+
     ai_response = process_message(body, conversation, client, escort)
     db.save_message(from_number, ai_response, is_client=False)
 
     resp = MessagingResponse()
     resp.message(ai_response)
     return str(resp)
+
+
 
 @app.route("/clients", methods=["GET"])
 def list_clients():
@@ -197,10 +207,6 @@ def escort_login():
 
     return render_template("escort_login.html")
 
-@app.route("/admin-dashboard")
-def admin_dashboard():
-    escorts = db.get_escorts()
-    return render_template("admin_dashboard.html", escorts=escorts)
 
 @app.route("/logout")
 def logout():
