@@ -2,106 +2,30 @@
 <html>
 <head>
     <title>Escort Profile - Velora AI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f7fa;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #9b59b6;
-        }
-        form {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        label {
-            font-weight: bold;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            margin-bottom: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .button {
-            background-color: #9b59b6;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .button:hover {
-            background-color: #8e44ad;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Edit Your Profile</h1>
-        <form id="escortForm">
-            <label for="name">Name</label>
-            <input type="text" id="name" placeholder="Enter your name">
+    <h1>Welcome, {{ escort.name }}</h1>
 
-            <label for="style">Conversation Style</label>
-            <select id="style">
-                <option value="friendly">Friendly & Warm</option>
-                <option value="professional">Professional & Discreet</option>
-                <option value="flirty">Flirty & Playful</option>
-                <option value="luxury">Luxury & Exclusive</option>
-            </select>
+    <h2>Style: {{ escort.style }}</h2>
 
-            <label for="bio">Your Bio</label>
-            <textarea id="bio" placeholder="Short description about yourself..." rows="4"></textarea>
+    <h3>Bio:</h3>
+    <p>{{ escort.bio }}</p>
 
-            <label for="doNotList">Boundaries (comma separated)</label>
-            <textarea id="doNotList" placeholder="e.g., no explicit pics, no location sharing" rows="3"></textarea>
+    <h3>Services Offered:</h3>
+    <ul>
+        {% for service in escort.services %}
+            <li>{{ service }}</li>
+        {% endfor %}
+    </ul>
 
-            <label for="services">Services Offered (comma separated)</label>
-            <textarea id="services" placeholder="e.g., companionship, dinner dates" rows="3"></textarea>
+    <h3>Do Not List:</h3>
+    <ul>
+        {% for item in escort.do_not_list %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
 
-            <button type="submit" class="button">Save Profile</button>
-        </form>
-    </div>
-
-    <script>
-        document.getElementById('escortForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('name').value;
-            const style = document.getElementById('style').value;
-            const bio = document.getElementById('bio').value;
-            const doNotList = document.getElementById('doNotList').value.split(',').map(item => item.trim());
-            const services = document.getElementById('services').value.split(',').map(item => item.trim());
-
-            fetch('/escort-profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name, style, bio, do_not_list: doNotList, services })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Profile saved successfully!');
-            })
-            .catch(error => {
-                alert('Failed to save profile.');
-                console.error(error);
-            });
-        });
-    </script>
+    <p><a href="/dashboard">Go to Dashboard</a></p>
 </body>
 </html>
+
