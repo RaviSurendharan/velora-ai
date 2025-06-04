@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 import os
 import database.models as db
+
+from flask import session
+app.secret_key = "velora-super-secret"  # for session management
+
 from ai.chat import process_message
 from messaging.sms import send_sms
 from twilio.twiml.messaging_response import MessagingResponse
@@ -136,10 +140,7 @@ def escort_profile():
             escort["services"]
         )
 
-        return redirect(url_for("dashboard"))
-
     return render_template("escort_profile.html", escort=escort)
-
 
 
 
@@ -175,12 +176,13 @@ def escort_login():
         escort = escorts.get(phone)
 
         if escort and escort["password"] == password:
-            session["escort_phone"] = phone
+            session["escort_phone"] = phone  # Save phone in session
             return redirect(url_for("escort_profile"))
         else:
             return "Invalid credentials. Please try again."
 
     return render_template("escort_login.html")
+
 
 @app.route("/admin")
 def admin_dashboard():
