@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard - Velora AI</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p>List of all registered escorts:</p>
+
+    <ul>
+        {% for phone, escort in escorts.items() %}
+            <li>
+                <strong>{{ escort.name }}</strong> ({{ phone }})<br>
+                Style: {{ escort.style or 'Not set' }}<br>
+                Bio: {{ escort.bio or 'Not set' }}<br>
+                Services: {{ escort.services or [] }}<br>
+                Do Not List: {{ escort.do_not_list or [] }}<br>
+                Joined: {{ escort.created_at }}
+                <hr>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+

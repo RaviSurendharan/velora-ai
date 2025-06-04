@@ -180,6 +180,13 @@ def escort_login():
 
     return render_template("escort_login.html")
 
+@app.route("/admin")
+def admin_dashboard():
+    escorts = db.get_escorts()
+    return render_template("admin_dashboard.html", escorts=escorts)
+
+
+
 # 🚀 Launch App
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
