@@ -23,21 +23,34 @@ def admin_dashboard():
     clients = db.get_clients()
     conversations = db.get_conversations()
 
+    total_messages = 0
+    total_clients = 0
+    total_revenue = 0
+
     for phone, escort in escorts.items():
-        # Count total messages sent by this escort's clients
         message_count = 0
         client_count = 0
 
         for client_phone, conv in conversations.items():
-            if client_phone.startswith(phone[-4:]):  # crude match
+            if client_phone.startswith(phone[-4:]):  # crude link
                 client_count += 1
                 message_count += len(conv)
 
         escort["message_count"] = message_count
         escort["client_count"] = client_count
-        escort["revenue"] = client_count * 400  # mock average revenue
+        escort["revenue"] = client_count * 400
 
-    return render_template("admin_dashboard.html", escorts=escorts)
+        total_messages += message_count
+        total_clients += client_count
+        total_revenue += escort["revenue"]
+
+    return render_template(
+        "admin_dashboard.html",
+        escorts=escorts,
+        total_messages=total_messages,
+        total_clients=total_clients,
+        total_revenue=total_revenue
+    )
 
 
 

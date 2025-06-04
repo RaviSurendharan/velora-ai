@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <title>Velora Admin Dashboard</title>
     <style>
+
+
+
+ .summary {
+    background: #fffbe6;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #f0e68c;
+    border-radius: 5px;
+}
+.summary ul {
+    list-style: none;
+    padding-left: 0;
+}
+.summary li {
+    margin: 0.3rem 0;
+    font-size: 1rem;
+}
+
+
         body {
             font-family: Arial, sans-serif;
             background: #f8f9fa;
@@ -45,6 +65,15 @@
         <div class="metric">👥 Clients Handled: {{ escort.client_count or 0 }}</div>
         <div class="metric">💰 Monthly Revenue: ${{ escort.revenue or 0 }}</div>
     </div>
+<div class="summary">
+  <h2>📊 Platform Summary</h2>
+  <ul>
+    <li><strong>Total Escorts:</strong> {{ escorts | length }}</li>
+    <li><strong>Total Clients:</strong> {{ total_clients }}</li>
+    <li><strong>Total Messages:</strong> {{ total_messages }}</li>
+    <li><strong>Total Revenue:</strong> ${{ total_revenue }}</li>
+  </ul>
+</div>
     {% endfor %}
 </body>
 </html>
