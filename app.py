@@ -1,9 +1,6 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 import os
 import database.models as db
-
-from flask import session
-app.secret_key = "velora-super-secret"  # for session management
 
 from ai.chat import process_message
 from messaging.sms import send_sms
@@ -11,26 +8,26 @@ from twilio.twiml.messaging_response import MessagingResponse
 from auth import auth_bp
 
 app = Flask(__name__)
-app.secret_key = "velora-secret-key"  # required for session support
-from flask import session
+app.secret_key = "velora-secret-key"  # Secure key for session
 
 app.register_blueprint(auth_bp)
 
-# 🔁 Redirect homepage to login
-
+# 🏠 Landing Page
 @app.route("/")
 def home():
     return render_template("home.html")
 
-
+# 📲 Dashboard
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html")
 
+# 📱 Client Page
 @app.route("/client/<phone_number>")
 def client_page(phone_number):
     return render_template("client.html")
 
+# 🤖 AI Test Route
 @app.route("/test-ai", methods=["GET"])
 def test_ai():
     test_message = request.args.get("message", "Hello")
@@ -43,21 +40,14 @@ def sms_webhook():
     from_number = request.values.get("From", "")
     body = request.values.get("Body", "")
 
-    print(f"Received message from {from_number}: {body}")
-
     client = db.get_client_by_phone(from_number)
     if not client:
-        client = db.save_client(
-            phone_number=from_number,
-            name="New Client",
-            style="friendly"
-        )
+        client = db.save_client(phone_number=from_number, name="New Client", style="friendly")
 
     escort = db.get_escort(from_number)
-
     db.save_message(from_number, body, is_client=True)
-    conversation = db.get_conversation(from_number)
 
+    conversation = db.get_conversation(from_number)
     ai_response = process_message(body, conversation, client, escort)
     db.save_message(from_number, ai_response, is_client=False)
 
@@ -65,6 +55,7 @@ def sms_webhook():
     resp.message(ai_response)
     return str(resp)
 
+# 📋 Clients API
 @app.route("/clients", methods=["GET"])
 def list_clients():
     return jsonify(db.get_clients())
@@ -89,6 +80,7 @@ def add_client(phone_number):
     )
     return jsonify(client)
 
+# 📤 Manual SMS Send
 @app.route("/send-message/<phone_number>", methods=["POST"])
 def send_message_to_client(phone_number):
     data = request.json
@@ -115,8 +107,7 @@ def test_sms():
         return jsonify({"error": "Missing 'to' parameter"}), 400
     return jsonify(send_sms(to_number, message))
 
-# 👩 Escort Profile Form
-
+# 👩 Escort Profile
 @app.route("/escort-profile", methods=["GET", "POST"])
 def escort_profile():
     phone_number = session.get("escort_phone")
@@ -146,9 +137,7 @@ def escort_profile():
 
     return render_template("escort_profile.html", escort=escort)
 
-
-
-# 📝 Signup Route
+# 📝 Signup
 @app.route("/escort-signup", methods=["GET", "POST"])
 def escort_signup():
     if request.method == "POST":
@@ -157,48 +146,4 @@ def escort_signup():
         password = request.form.get("password")
 
         escorts = db.get_escorts()
-        if phone in escorts:
-            return "Escort already exists. Please login."
-
-        db.save_escort(phone, name, password)
-        return "Signup successful! You can now login."
-
-    return render_template("escort_signup.html")
-
-# 🔐 Login Route
-
-
-@app.route("/escort-login", methods=["GET", "POST"])
-def escort_login():
-    if request.method == "POST":
-        phone = request.form.get("phone")
-        password = request.form.get("password")
-
-        escorts = db.get_escorts()
-        escort = escorts.get(phone)
-
-        if escort and escort["password"] == password:
-            session["escort_phone"] = phone  # ✅ save to session
-            return redirect(url_for("escort_profile"))
-        else:
-            return "Invalid credentials. Please try again."
-
-    return render_template("escort_login.html")
-
-@app.route("/admin-dashboard")
-def admin_dashboard():
-    escorts = db.get_escorts()
-    return render_template("admin_dashboard.html", escorts=escorts)
-
-
-@app.route("/logout")
-def logout():
-    session.pop("escort_phone", None)
-    return redirect(url_for("escort_login"))
-
-
-# 🚀 Launch App
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
+        if
