@@ -11,6 +11,9 @@ from twilio.twiml.messaging_response import MessagingResponse
 from auth import auth_bp
 
 app = Flask(__name__)
+app.secret_key = "velora-secret-key"  # required for session support
+from flask import session
+
 app.register_blueprint(auth_bp)
 
 # 🔁 Redirect homepage to login
@@ -113,6 +116,7 @@ def test_sms():
     return jsonify(send_sms(to_number, message))
 
 # 👩 Escort Profile Form
+
 @app.route("/escort-profile", methods=["GET", "POST"])
 def escort_profile():
     phone_number = session.get("escort_phone")
@@ -163,8 +167,6 @@ def escort_signup():
 
 # 🔐 Login Route
 
-from flask import session  # make sure this is at the top of the file
-app.secret_key = "velora_secret_key"  # Add this near app = Flask(...)
 
 @app.route("/escort-login", methods=["GET", "POST"])
 def escort_login():
@@ -176,19 +178,23 @@ def escort_login():
         escort = escorts.get(phone)
 
         if escort and escort["password"] == password:
-            session["escort_phone"] = phone  # Save phone in session
+            session["escort_phone"] = phone  # ✅ save to session
             return redirect(url_for("escort_profile"))
         else:
             return "Invalid credentials. Please try again."
 
     return render_template("escort_login.html")
 
-
 @app.route("/admin-dashboard")
 def admin_dashboard():
     escorts = db.get_escorts()
     return render_template("admin_dashboard.html", escorts=escorts)
 
+
+@app.route("/logout")
+def logout():
+    session.pop("escort_phone", None)
+    return redirect(url_for("escort_login"))
 
 
 # 🚀 Launch App
