@@ -109,14 +109,19 @@ def test_sms():
 # 👩 Escort Profile Form
 @app.route("/escort-profile", methods=["GET", "POST"])
 def escort_profile():
-    phone_number = request.headers.get("X-Phone-Number", "12345")  # TEMP: hardcoded for now
+    phone_number = request.headers.get("X-Phone-Number", "12345")  # temporary default phone
+
     escort = db.get_escort(phone_number)
+    if not escort:
+        escort = {
+            "name": "",
+            "style": "",
+            "bio": "",
+            "services": [],
+            "do_not_list": []
+        }
 
     if request.method == "POST":
-        if not escort:
-            # If escort not found, create empty profile
-            escort = {}
-
         escort["name"] = request.form.get("name")
         escort["style"] = request.form.get("style")
         escort["bio"] = request.form.get("bio")
@@ -126,16 +131,14 @@ def escort_profile():
         db.save_escort(
             phone_number,
             escort["name"],
-            escort.get("password", ""),
+            escort.get("password", ""),  # Fallback if missing
             escort["style"],
             escort["bio"],
             escort["do_not_list"],
             escort["services"]
         )
 
-        return render_template("escort_profile.html", escort=escort)
-
-    return render_template("escort_profile.html", escort=escort or {})
+    return render_template("escort_profile.html", escort=escort)
 
 
 # 📝 Signup Route

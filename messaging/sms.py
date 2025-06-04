@@ -1,16 +1,16 @@
-from twilio.rest import Client
 import os
+from dotenv import load_dotenv
+from twilio.rest import Client
 
-# Get Twilio credentials from environment variables
-account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
-auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-twilio_number = os.environ.get("TWILIO_PHONE_NUMBER")
+load_dotenv()
 
-# Initialize Twilio client
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+twilio_number = os.getenv("TWILIO_PHONE_NUMBER")
+
 client = Client(account_sid, auth_token)
 
 def send_sms(to_number, message):
-    """Send SMS message using Twilio"""
     try:
         message = client.messages.create(
             body=message,
@@ -19,5 +19,5 @@ def send_sms(to_number, message):
         )
         return {"success": True, "sid": message.sid}
     except Exception as e:
-        print(f"Error sending SMS: {e}")
         return {"success": False, "error": str(e)}
+
